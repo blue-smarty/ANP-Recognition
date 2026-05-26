@@ -11,6 +11,7 @@ suite can run on any CI machine.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 from typing import List
@@ -33,7 +34,69 @@ from src.anpr.state_classifier import (
 from src.anpr.plate_detector import PlateDetector, DetectedPlate
 from src.anpr.plate_recognizer import PlateRecognizer
 from src.anpr.pipeline import ANPRPipeline, PlateResult
+from src.anpr.qt_runtime import configure_qt_font_dir
 from src.anpr.utils import draw_plate_annotation
+
+
+# ===========================================================================
+# Qt runtime helpers
+# ===========================================================================
+
+class TestQtRuntime:
+    def test_configure_qt_font_dir_prefers_first_font_dir(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+    ) -> None:
+        monkeypatch.delenv("QT_QPA_FONTDIR", raising=False)
+        monkeypatch.delenv("FONTCONFIG_PATH", raising=False)
+        monkeypatch.delenv("FONTCONFIG_FILE", raising=False)
+
+        bundled = tmp_path / "bundled-fonts"
+        bundled.mkdir()
+        (bundled / "DejaVuSans.ttf").write_bytes(b"font")
+
+        fallback = tmp_path / "fallback-fonts"
+        fallback.mkdir()
+        (fallback / "SystemSans.ttf").write_bytes(b"font")
+
+        chosen = configure_qt_font_dir([bundled, fallback])
+
+        assert chosen == bundled
+        assert Path(os.environ["QT_QPA_FONTDIR"]) == bundled
+
+    def test_configure_qt_font_dir_preserves_existing_setting(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+    ) -> None:
+        configured = tmp_path / "already-configured"
+        configured.mkdir()
+        monkeypatch.setenv("QT_QPA_FONTDIR", str(configured))
+        monkeypatch.delenv("FONTCONFIG_PATH", raising=False)
+        monkeypatch.delenv("FONTCONFIG_FILE", raising=False)
+
+        chosen = configure_qt_font_dir([tmp_path / "unused"])
+
+        assert chosen == configured
+        assert Path(os.environ["QT_QPA_FONTDIR"]) == configured
+
+    def test_configure_qt_font_dir_respects_fontconfig(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+    ) -> None:
+        monkeypatch.delenv("QT_QPA_FONTDIR", raising=False)
+        monkeypatch.setenv("FONTCONFIG_PATH", str(tmp_path))
+
+        bundled = tmp_path / "bundled-fonts"
+        bundled.mkdir()
+        (bundled / "DejaVuSans.ttf").write_bytes(b"font")
+
+        chosen = configure_qt_font_dir([bundled])
+
+        assert chosen is None
+        assert os.environ.get("QT_QPA_FONTDIR") is None
 
 
 # ===========================================================================
