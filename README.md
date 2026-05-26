@@ -124,6 +124,7 @@ python main.py camera --save-dir results/
 
 ```bash
 python main.py image plate.jpg --no-window
+python main.py camera --source 0 --no-window
 ```
 
 ### Custom configuration

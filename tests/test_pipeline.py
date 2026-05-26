@@ -264,6 +264,32 @@ class TestANPRPipeline:
         results = pipeline.process_image(missing, annotate=False)
         assert results == []
 
+    def test_run_stream_headless_does_not_call_waitkey(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        pipeline = self._make_pipeline()
+
+        class _DummyCapture:
+            def __init__(self) -> None:
+                self._reads = 0
+
+            def read(self):
+                if self._reads == 0:
+                    self._reads += 1
+                    return True, np.zeros((32, 64, 3), dtype=np.uint8)
+                return False, None
+
+            def release(self) -> None:
+                return None
+
+        monkeypatch.setattr("src.anpr.pipeline.open_camera", lambda _source: _DummyCapture())
+
+        def _fail_waitkey(_delay: int) -> int:
+            raise AssertionError("cv2.waitKey should not be called when show_window is False")
+
+        monkeypatch.setattr("src.anpr.pipeline.cv2.waitKey", _fail_waitkey)
+        monkeypatch.setattr("src.anpr.pipeline.cv2.destroyAllWindows", lambda: None)
+
+        pipeline.run_stream(source=0, max_frames=1, annotate=False)
+
 
 # ===========================================================================
 # draw_plate_annotation utility

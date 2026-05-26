@@ -263,10 +263,14 @@ class ANPRPipeline:
                     if r.plate_text:
                         logger.info("Frame %d  %s", frame_idx, r)
 
-                key = cv2.waitKey(self._frame_delay) & 0xFF
-                if key == ord("q") or key == 27:  # q or ESC to quit
-                    logger.info("User requested quit.")
-                    break
+                if self._show_window:
+                    key = cv2.waitKey(self._frame_delay) & 0xFF
+                    if key == ord("q") or key == 27:  # q or ESC to quit
+                        logger.info("User requested quit.")
+                        break
+                elif self._frame_delay > 0:
+                    # Keep a similar pacing in headless mode without invoking GUI APIs.
+                    time.sleep(self._frame_delay / 1000.0)
 
                 frame_idx += 1
                 if max_frames is not None and frame_idx >= max_frames:
@@ -275,7 +279,8 @@ class ANPRPipeline:
 
         finally:
             cap.release()
-            cv2.destroyAllWindows()
+            if self._show_window:
+                cv2.destroyAllWindows()
             logger.info("Stream closed after %d frames.", frame_idx)
 
     # ------------------------------------------------------------------
