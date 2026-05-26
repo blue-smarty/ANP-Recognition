@@ -110,6 +110,22 @@ def cmd_camera(args: argparse.Namespace, pipeline: ANPRPipeline) -> None:
     )
 
 
+def cmd_gui(args: argparse.Namespace) -> None:
+    """Launch the desktop GUI wrapper."""
+    try:
+        from src.anpr.gui import launch_gui
+    except ImportError as exc:
+        logger.error("GUI is unavailable in this environment: %s", exc)
+        sys.exit(1)
+
+    launch_gui(
+        config_path=args.config,
+        log_level=args.log_level,
+        save_dir=args.save_dir,
+        no_window=args.no_window,
+    )
+
+
 # ---------------------------------------------------------------------------
 # Argument parsing
 # ---------------------------------------------------------------------------
@@ -177,6 +193,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Stop processing after N frames (default: run until quit).",
     )
 
+    # --- gui sub-command ---
+    sub.add_parser("gui", help="Launch a desktop GUI wrapper.")
+
     return parser
 
 
@@ -187,6 +206,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
+
+    if args.command == "gui":
+        cmd_gui(args)
+        return
 
     setup_logging(args.log_level)
 

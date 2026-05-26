@@ -139,6 +139,15 @@ python main.py camera --source 0 --no-window
 python main.py --config path/to/custom_config.yaml image plate.jpg
 ```
 
+### Desktop GUI wrapper
+
+Launch the GUI with all runtime options (config path, log level, save directory,
+headless mode, image input, camera/video/RTSP source, and max frames):
+
+```bash
+python main.py gui
+```
+
 Press **q** or **Esc** to quit the live camera window.
 
 ---
