@@ -1,0 +1,52 @@
+# ANP-Recognition Pipeline Configuration
+
+inference:
+  # "hailo" to use Hailo8 hardware, "onnx" to use ONNX CPU runtime
+  backend: hailo
+
+  hailo:
+    # Path to Hailo Executable Format (HEF) model files.
+    # Download from the Hailo AI Zoo (see models/README.md).
+    detector_hef: models/yolov8n_license_plate.hef
+    recognizer_hef: models/lprnet.hef
+
+  onnx:
+    # ONNX model paths used when Hailo hardware is unavailable.
+    detector_onnx: models/yolov8n_license_plate.onnx
+    recognizer_onnx: models/lprnet.onnx
+
+detector:
+  # Model input resolution expected by the detector.
+  input_width: 640
+  input_height: 640
+  # Detection confidence threshold.
+  confidence_threshold: 0.45
+  # Non-maximum suppression IoU threshold.
+  nms_threshold: 0.45
+  # Minimum plate region size (pixels) to consider valid.
+  min_plate_area: 500
+
+recognizer:
+  # Padded context (pixels) to add around a detected plate before OCR.
+  padding: 4
+  # Tesseract config used by the pytesseract fallback.
+  tesseract_config: "--psm 8 --oem 3 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  # Input size expected by the LPRNet OCR model.
+  input_width: 94
+  input_height: 24
+
+display:
+  # Draw detection boxes and labels on output frames.
+  show_annotations: true
+  # Show recognised text above the plate bounding box.
+  show_text: true
+  # Output window name (empty string disables live window).
+  window_name: "ANP-Recognition"
+  # Delay between video frames (ms). 0 = wait for key press.
+  frame_delay_ms: 1
+
+output:
+  # Directory to save annotated frames/images (empty = no file output).
+  save_dir: ""
+  # Show state/territory label alongside recognised text.
+  show_state: true
