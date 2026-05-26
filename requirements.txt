@@ -1,0 +1,19 @@
+# Core runtime
+numpy>=1.24.0
+opencv-python>=4.8.0
+Pillow>=10.0.0
+PyYAML>=6.0.1
+
+# OCR fallback (used when Hailo OCR model is unavailable)
+pytesseract>=0.3.10
+
+# ONNX fallback inference (used when Hailo hardware is unavailable)
+onnxruntime>=1.16.0
+
+# Hailo Runtime – install separately from the Hailo Developer Zone
+# https://hailo.ai/developer-zone/
+# hailo-platform  (not on PyPI; installed via the HailoRT .whl from the dev portal)
+
+# Utilities
+tqdm>=4.66.0
+loguru>=0.7.2
