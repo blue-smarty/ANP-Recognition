@@ -49,6 +49,12 @@ Install Python dependencies:
 pip install -r requirements.txt
 ```
 
+For OpenCV GUI windows, recent Qt builds expect fonts to come from the host
+system or your app bundle. This repository ships a minimal DejaVu Sans set in
+`src/anpr/fonts/` and configures `QT_QPA_FONTDIR` automatically before OpenCV
+loads. If you repackage the application, keep that directory with the app or
+install `fontconfig` plus a DejaVu font package such as `fonts-dejavu-core`.
+
 ### Tesseract (optional fallback OCR)
 
 ```bash
